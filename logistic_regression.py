@@ -1,73 +1,40 @@
 import numpy as np
 import math
+from statistics import mean
 
+class LogisticRegression():
+    
+    def __init__(self):
+        self.X = []
+    
+    def fit(self, X, y):
+        self.input = X
+        self.output = y
 
-class Logistic_Regression():
+        self.a1 = (mean(self.input*self.output) - mean(self.input)*mean(self.output))/(mean(self.input**2) - mean(self.input)**2)
+        self.a0 = mean(self.output) - self.a1*mean(self.input)
+        
+    def predict(self, X, value = 0.5):
+        return [self._sigmoid(x, value) for x in X]
+    
+    def _sigmoid(self, x, value):
+        return 1 if 1 / (1 + math.exp(-(self.a0 + self.a1 * x))) >= value else 0
 
-    """
-        Class to calculate simple regression
-    """
-
-    def __init__(self, X, Y):
-        """
-            Constructor:
-                Args :
-                X (list) : input value of feature
-                Y (list) : corresponding output values of feature.
-
-        """
-        self.input = np.array(X)
-        self.output = np.array(Y)
-
-        self.mean_x = sum(self.input)/len(self.input)
-        self.mean_y = sum(self.output)/len(self.output)
-
-        self.mean_sq_x = np.dot(self.input, self.input)/len(self.input)
-        self.mean_xy = np.dot(self.input, self.output)/len(self.input)
-
-        self.a1 = (self.mean_xy - self.mean_x*self.mean_y) / \
-            ((self.mean_sq_x) - (self.mean_x)**2)
-
-        self.a0 = self.mean_y - self.a1*self.mean_x
-
-    def sigmoid(self, x):
-        return 1/(1 + math.e**(-(self.a0 + self.a1*x)))
-
-    def calculate(self, x):
-        if (self.sigmoid(x) >= 0.5):
-            return 1
-        else:
-            return 0
-
-    def log_fun(self, input):
-        # squares = [x*x for x in range(11)]
-
-        # lst = [self.calculate(val) for val in self.input]
-        lst = []
-
-        for value in input:
-            lst.append(self.calculate(value))
-        return lst
-
+    def r_squared(self, y_output, y_predicted):
+        tss = sum((y - mean(y_output))**2 for y in y_output)
+        rss = sum((y - x)**2 for y,x in zip(y_output,y_predicted))
+        return 1 - (rss/tss)
+    
+    def mean_square_error(self, y, y_pred):
+        return sum([(x-y)**2 for x,y in zip(y, y_pred)])/len(y_pred)
+    
 
 input = np.array([0.5, 1.0, 1.25, 2.5, 3.0, 1.75, 4.0, 4.25, 4.75, 5.0])
-output = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
+output = np.array([0,0,0,0,0,1,1,1,1,1])
 
-
-def my_accuracy(lst1, lst2):
-    count_yes = 0
-    for i in range(len(lst1)):
-        if lst1[i] == lst2[i]:
-            count_yes = count_yes+1
-    return (count_yes)/len(lst1)
-
-# model.score(input, output)
-# print("score:", model.score(input, output))
-
-
-x = 7
-myObj = Logistic_Regression(input, output)
-# print("Predicted value of ", x, " is ", slr.calculate(x))
-pred_ans = myObj.log_fun(input)
-print(myObj.log_fun(input))
-print("accuracy:", my_accuracy(pred_ans, output))
+lr = LogisticRegression()
+ot = lr.fit(input, output)
+predicted = lr.predict(input, 0.6)
+print(predicted)
+print(lr.r_squared(output, predicted))
+print(lr.mean_square_error(output, predicted))
